@@ -6,6 +6,9 @@ using Bookstore.Domain.Offers;
 using Bookstore.Domain.Orders;
 using Bookstore.Domain.ReferenceData;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
+using System.Linq;
+using System;
 
 namespace Bookstore.Data
 {
@@ -35,6 +38,41 @@ namespace Bookstore.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Configure entities to use PostgreSQL schema
+            modelBuilder.HasDefaultSchema("bobsusedbookstore_dbo");
+            
+            // Configure boolean properties to use int conversion for PostgreSQL compatibility
+            modelBuilder.Entity<Book>()
+                .Property(e => e.IsInStock)
+                .HasConversion<int>();
+                
+            modelBuilder.Entity<Book>()
+                .Property(e => e.IsLowInStock)
+                .HasConversion<int>();
+                
+            modelBuilder.Entity<Address>()
+                .Property(e => e.IsActive)
+                .HasConversion<int>();
+                
+            modelBuilder.Entity<ShoppingCartItem>()
+                .Property(e => e.WantToBuy)
+                .HasConversion<int>();
+            
+            // Configure DateTimes to use UTC for PostgreSQL compatibility
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(
+                            new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+                                v => v.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(v, DateTimeKind.Utc) : v.ToUniversalTime(),
+                                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)));
+                    }
+                }
+            }
+            
             modelBuilder.Entity<Customer>().HasIndex(x => x.Sub).IsUnique();
 
             modelBuilder.Entity<Book>().HasOne(x => x.Publisher).WithMany().HasForeignKey(x => x.PublisherId).OnDelete(DeleteBehavior.Restrict);

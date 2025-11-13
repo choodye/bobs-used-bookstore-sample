@@ -1,16 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Bookstore.Domain
 {
     public abstract class Entity
     {
-        public int Id { get; set; }
+        public virtual int Id { get; set; }
 
-        public string CreatedBy { get; set; } = "System";
+        public virtual string CreatedBy { get; set; } = "System";
 
-        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        public virtual DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
-        public DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
+        public virtual DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
 
         [Timestamp]
         public byte[] RowVersion { get; set; }

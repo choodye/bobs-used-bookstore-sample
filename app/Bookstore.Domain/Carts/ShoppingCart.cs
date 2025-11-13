@@ -1,9 +1,17 @@
-﻿namespace Bookstore.Domain.Carts
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+
+namespace Bookstore.Domain.Carts
 {
+    [Table("shoppingcart", Schema = "bobsusedbookstore_dbo")]
     public class ShoppingCart : Entity
     {
         public List<ShoppingCartItem> ShoppingCartItems { get; private set; } = new();
 
+        [Column("correlationid")]
         public string CorrelationId { get; set; }
 
         public ShoppingCart(string correlationId)
@@ -53,6 +61,19 @@
         {
             return GetShoppingCartItems(filter).Sum(x => x.Book.Price);
         }
+        
+        [Key]
+        [Column("id")]
+        public override int Id { get; set; }
+        
+        [Column("createdby")]
+        public override string CreatedBy { get; set; } = "System";
+        
+        [Column("createdon")]
+        public override DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        
+        [Column("updatedon")]
+        public override DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
     }
 
     public enum ShoppingCartItemFilter
